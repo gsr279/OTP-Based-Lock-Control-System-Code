@@ -1,0 +1,95 @@
+
+/*
+
+  Commands
+
+  b = Open the door “opens the electronic lock”
+
+  c = close the door
+
+ */
+
+To close or open the door you will send c or b in a text message. If you send b in a text messages the door will open and if you only send c in the text message it will close the door.
+
+I started off by including the SoftwareSerial.h header file. This library is used to define multiple serial ports. Using this I defined a serial port on pin number 7 and pin number 8 of the Arduino.
+
+#include <SoftwareSerial.h>
+
+char inchar; // Will hold the incoming character from the GSM shield
+
+SoftwareSerial SIM900(7, 8); // gsm module connected here.
+
+int load1 = 13; //electronic lock is controlled using pin number 13 of the Arduino
+
+int flag1 = 0;
+
+void setup() {
+
+  Serial.begin(9600); // activate the serial communication while 9600 is the baud rate
+
+  pinMode(load1 , OUTPUT); // load1 which is the electronic lock is set as output
+
+  digitalWrite(load1, LOW); // we keep to close by default.
+
+  SIM900.begin(9600); // original 19200
+
+randomSeed(analogRead(0));
+ 
+
+  SIM900.print(“AT+CMGF=1\r”);  // set SMS mode to text
+
+  delay(1000);
+
+  SIM900.print(“AT+CNMI=2,2,0,0,0\r”);
+
+  // blurt out contents of new SMS upon receipt to the GSM shield’s serial out
+
+  delay(1000);
+
+     SIM900.println(“AT+CMGD=1,4”); // delete all SMS
+
+   delay(5000);
+
+  Serial.println(“Ready…”);
+
+}
+
+void loop() {
+
+  if(SIM900.available() >0) // if the gsm module has received a message then
+
+  {
+
+    inchar=SIM900.read(); // read the message and also print the received character.
+
+  Serial.println(inchar);
+
+    delay(20);
+
+using the following if conditions we check whether the GSM module has received the character b or c and then accordingly control the Electronic Lock.
+
+//    for LOAD1
+
+    if ( (inchar == ‘b’) && ( flag1 == 0))
+
+    {
+
+      digitalWrite(load1, HIGH);
+
+      flag1 = 1;
+
+    }
+
+        if ( (inchar == ‘c’) && (flag1 == 1))
+
+    {
+
+      digitalWrite(load1, LOW);
+
+      flag1 = 0;
+
+    }
+
+}
+
+}
